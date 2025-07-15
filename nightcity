@@ -1,0 +1,65 @@
+-- 🔐 Kiểm tra người dùng đã nhập key chưa
+if not getgenv().key or type(getgenv().key) ~= "string" or #getgenv().key < 4 then
+    warn("❌ Bạn chưa nhập key hợp lệ! Vui lòng dùng: getgenv().key = \"KEY_CUA_BAN\" trước khi chạy script.")
+    return
+end
+
+print("🔑 Key được nhập từ người dùng:", getgenv().key)
+
+-- 👤 Lấy tên player đang chạy script
+local player = game:GetService("Players").LocalPlayer
+local playerName = player and player.Name or "Không xác định"
+print("👤 Theo dõi level từ Billboard của bạn:", playerName)
+
+-- 🎯 Hàm loại bỏ RichText và tách level
+local function parseLevel(text)
+    local clean = text:gsub("<[^>]->", "")
+    local level = string.match(clean, "Lv%. (%d+)")
+    return level
+end
+
+-- 📍 Đường dẫn đến TextLabel chứa Level
+local success, label = pcall(function()
+    return workspace:WaitForChild("CharacterFolder", 10)
+        :WaitForChild(playerName, 10)
+        :WaitForChild("NameBillboard", 10)
+        :WaitForChild("NameFrame", 10)
+        :WaitForChild("LevelFrame", 10)
+        :WaitForChild("TextLabel", 10)
+        :WaitForChild("TextLabel", 10)
+end)
+
+if not success or not label or not label:IsA("TextLabel") then
+    warn("❌ Không tìm thấy TextLabel cấp độ của bạn!")
+    return
+end
+
+-- ✅ Theo dõi realtime khi Text thay đổi
+local currentLevel = parseLevel(label.Text)
+if currentLevel then
+    print("⭐ Level ban đầu:", currentLevel)
+end
+
+label:GetPropertyChangedSignal("Text"):Connect(function()
+    local newLevel = parseLevel(label.Text)
+    if newLevel and newLevel ~= currentLevel then
+        currentLevel = newLevel
+        print("🔄 Level đã thay đổi! Level mới:", newLevel)
+    end
+end)
+
+print("✅ Đang theo dõi Level từ nhân vật chính của bạn...")
+
+-- 🔁 Tự động kiểm tra lại level sau mỗi 5 phút
+spawn(function()
+    while true do
+        wait(300)
+        local latestLevel = parseLevel(label.Text)
+        if latestLevel and latestLevel ~= currentLevel then
+            currentLevel = latestLevel
+            print("⏰ [5 PHÚT] Level đã thay đổi! Level mới:", currentLevel)
+        else
+            print("⏰ [5 PHÚT] Level vẫn là:", currentLevel)
+        end
+    end
+end)
