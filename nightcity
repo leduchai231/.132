@@ -63,3 +63,28 @@ spawn(function()
         end
     end
 end)
+Beta
+0 / 0
+used queries
+1
+
+local HttpService = game:GetService("HttpService")
+local HttpRequest = (syn and syn.request) or (http and http.request) or (request)
+if not HttpRequest then
+    warn("❌ Không tìm thấy hàm gửi HTTP request! Hãy dùng executor hỗ trợ syn.request hoặc http.request.")
+    return
+end
+
+local function sendToTool(username, level, key)
+    local data = HttpService:JSONEncode({username=username, level=level, key=key})
+    HttpRequest({
+        Url = "http://localhost:5005/",
+        Method = "POST",
+        Headers = {['Content-Type'] = 'application/json'},
+        Body = data
+    })
+end
+
+-- Sau khi lấy được username, level, key:
+sendToTool(playerName, currentLevel, getgenv().key)
+-- Và trong label:GetPropertyChangedSignal("Text") callback, mỗi lần level thay đổi cũng gọi lại sendToTool
